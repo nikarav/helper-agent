@@ -7,7 +7,7 @@ from helper_agent.data.models import Document
 
 def save_documents(
     docs: list[Document],
-    output_dir: Path,
+    output_dir: Path | str,
     filename: str,
     formats: list[str],
 ) -> None:
@@ -15,11 +15,12 @@ def save_documents(
     Save documents to the specified output formats.
 
     :param docs: List of documents to save
-    :param output_dir: Output directory
+    :param output_dir: Output directory (Path or string)
     :param filename: Filename to save
     :param formats: List of formats to save
     :return: None
     """
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for fmt in formats:
