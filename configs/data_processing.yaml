@@ -1,0 +1,20 @@
+sources:
+  - path: data/langgraph-llms-full.txt
+    format: langgraph
+    name: langgraph
+
+  - path: data/langchain-llms-full.txt
+    format: langchain
+    name: langchain
+    filter:
+      include_categories:
+        - oss/python/langchain      # Core LangChain Python
+        - oss/python/integrations   # Model providers, vector stores, tools
+        - oss/python/migrate        # Migration guides
+        - oss/python/releases       # Release notes
+output:
+  directory: data/processed
+  filename: filtered_docs_new
+  formats:
+    - json  
+
