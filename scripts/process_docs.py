@@ -11,11 +11,25 @@ from helper_agent.utilities.utils import print_summary
 logger = get_logger(__name__)
 
 
+def _extract_category_patterns(
+    category_patterns: list[tuple[str, str]] | None,
+) -> list[tuple[str, str]] | None:
+    """
+    Extract category patterns from source config.
+
+    :param category_patterns: List of (pattern, category) tuples
+    :return: List of (pattern, category) tuples or None
+    """
+    if not category_patterns:
+        return None
+    return [(pattern.pattern, pattern.category) for pattern in category_patterns]
+
+
 def main(config: DotDict) -> None:
     """
-    Process a single source file according to its config.
+    Process documentation files according to config.
 
-    :param source_config: Source configuration dictionary
+    :param config: Configuration dictionary
     :return: None
     """
     all_docs = []
@@ -24,15 +38,19 @@ def main(config: DotDict) -> None:
         format_type = source_config.format
         source_name = source_config.name
 
-        docs = parse_file(filepath, format_type, source_name)
+        category_patterns = _extract_category_patterns(
+            source_config.get("category_patterns")
+        )
+
+        docs = parse_file(filepath, format_type, source_name, category_patterns)
         logger.info(f"  Parsed: {len(docs)} documents")
 
-        filter_config = source_config.filter
-        include_cats = filter_config.include_categories
-        exclude_cats = filter_config.exclude_categories
-
-        docs = filter_by_categories(docs, include_cats, exclude_cats)
-        logger.info(f"  Filtered: {len(docs)} documents")
+        filter_config = source_config.get("filter")
+        if filter_config:
+            include_cats = filter_config.get("include_categories")
+            exclude_cats = filter_config.get("exclude_categories")
+            docs = filter_by_categories(docs, include_cats, exclude_cats)
+            logger.info(f"  Filtered: {len(docs)} documents")
 
         all_docs.extend(docs)
     print_summary(all_docs)
