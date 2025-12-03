@@ -3,6 +3,20 @@ from pathlib import Path
 
 from helper_agent.data.models import Document
 
+DEFAULT_CATEGORY_PATTERNS = [
+    ("/oss/python/langchain/", "oss/python/langchain"),
+    ("/oss/python/langgraph/", "oss/python/langgraph"),
+    ("/oss/python/integrations/", "oss/python/integrations"),
+    ("/oss/python/migrate/", "oss/python/migrate"),
+    ("/oss/python/releases/", "oss/python/releases"),
+    ("/oss/python/deepagents/", "oss/python/deepagents"),
+    ("/oss/python/contributing/", "oss/python/contributing"),
+    ("/oss/python/concepts/", "oss/python/concepts"),
+    ("/oss/python/", "oss/python/other"),
+    ("/oss/javascript/", "oss/javascript"),
+    ("/langsmith/", "langsmith"),
+]
+
 
 class LangGraphParser:
     """
@@ -70,34 +84,29 @@ class LangChainParser:
     """
 
     @staticmethod
-    def _extract_category(url: str) -> str:
+    def _extract_category(
+        url: str,
+        category_patterns: list[tuple[str, str]] | None = None,
+    ) -> str:
         """
         Extract category from langchain URL for filtering.
 
         :param url: URL to extract category from
+        :param category_patterns: List of (pattern, category) tuples. Uses defaults if None.
         :return: Category
         """
-        category_patterns = [
-            ("/oss/python/langchain/", "oss/python/langchain"),
-            ("/oss/python/langgraph/", "oss/python/langgraph"),
-            ("/oss/python/integrations/", "oss/python/integrations"),
-            ("/oss/python/migrate/", "oss/python/migrate"),
-            ("/oss/python/releases/", "oss/python/releases"),
-            ("/oss/python/deepagents/", "oss/python/deepagents"),
-            ("/oss/python/contributing/", "oss/python/contributing"),
-            ("/oss/python/concepts/", "oss/python/concepts"),
-            ("/oss/python/", "oss/python/other"),
-            ("/oss/javascript/", "oss/javascript"),
-            ("/langsmith/", "langsmith"),
-        ]
-
-        for pattern, category in category_patterns:
+        patterns = category_patterns or DEFAULT_CATEGORY_PATTERNS
+        for pattern, category in patterns:
             if pattern in url:
                 return category
         return "other"
 
     @staticmethod
-    def parse(filepath: Path, source_name: str = "langchain") -> list[Document]:
+    def parse(
+        filepath: Path,
+        source_name: str = "langchain",
+        category_patterns: list[tuple[str, str]] | None = None,
+    ) -> list[Document]:
         """
         Parse LangChain llms-full.txt format.
 
@@ -115,6 +124,7 @@ class LangChainParser:
 
         :param filepath: Path to the llms-full.txt file
         :param source_name: Name to identify this source (default: "langchain")
+        :param category_patterns: List of (pattern, category) tuples for URL categorization
         :return: List of parsed Document objects
         """
         content = filepath.read_text(encoding="utf-8")
@@ -135,7 +145,7 @@ class LangChainParser:
             doc_content = content[start:end].strip()
 
             doc_content = re.sub(r"\n\*{3}\s*$", "", doc_content)  # trailing separators
-            category = LangChainParser._extract_category(source)
+            category = LangChainParser._extract_category(source, category_patterns)
             docs.append(
                 Document(
                     title=title,
@@ -152,6 +162,7 @@ def parse_file(
     filepath: Path | str,
     format_type: str,
     source_name: str | None = None,
+    category_patterns: list[tuple[str, str]] | None = None,
 ) -> list[Document]:
     """
     Parse a documentation file using the appropriate parser.
@@ -159,6 +170,7 @@ def parse_file(
     :param filepath: Path to the file to parse
     :param format_type: Type of format ("langgraph" or "langchain")
     :param source_name: Optional name for the source (defaults to format_type)
+    :param category_patterns: Optional list of (pattern, category) tuples for langchain format
     :return: List of parsed Document objects
     :raises ValueError: If format_type is not supported
     """
@@ -168,6 +180,6 @@ def parse_file(
     if format_type == "langgraph":
         return LangGraphParser.parse(filepath, source_name)
     elif format_type == "langchain":
-        return LangChainParser.parse(filepath, source_name)
+        return LangChainParser.parse(filepath, source_name, category_patterns)
     else:
         raise ValueError(f"Unknown format type: {format_type}")
