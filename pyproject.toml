@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "helper-agent"
+version = "0.1.0"
+description = "LangGraph Helper Agent for documentation Q&A"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai==1.52.0",
+    "langgraph==1.0.4",
+    "langchain==1.1.0",
+    "langchain-google-genai==3.2.0",
+    "pandas==2.3.3",
+    "tqdm==4.67.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0",
+    "isort>=5.13",
+    "flake8>=7.0",
+    "mypy>=1.8",
+]
+
+[tool.setuptools]
+packages = ["helper_agent"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+include_trailing_comma = true
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
