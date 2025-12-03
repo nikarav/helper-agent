@@ -34,5 +34,8 @@ class Document:
 
     def __repr__(self) -> str:
         """Return a string representation of the document."""
-        title_preview = self.title[:40] if len(self.title) > 40 else self.title
-        return f"Document(title='{title_preview}...', chars={self.char_count})"
+        if len(self.title) > 40:
+            title_preview = f"{self.title[:40]}..."
+        else:
+            title_preview = self.title
+        return f"Document(title='{title_preview}', chars={self.char_count})"
