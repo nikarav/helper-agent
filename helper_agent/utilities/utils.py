@@ -1,8 +1,28 @@
+import os
+
 from helper_agent.data.filters import get_category_counts, get_source_counts
 from helper_agent.data.models import Document
 from helper_agent.utilities.logger import get_logger
 
 logger = get_logger("helper_agent")
+
+
+def load_prompt(name: str, prompts_dir: str) -> str:
+    """
+    Load a prompt template from file.
+
+    :param name: Prompt name (without .txt extension)
+    :param prompts_dir: Directory containing prompts
+    :return: Prompt template string
+    """
+    prompt_file = os.path.join(prompts_dir, f"{name}.txt")
+
+    if not os.path.exists(prompt_file):
+        raise FileNotFoundError(f"Prompt file not found: {prompt_file}")
+
+    content = open(prompt_file, "r", encoding="utf-8").read()
+    logger.debug(f"Loaded prompt: {name}")
+    return content
 
 
 def print_summary(docs: list[Document]) -> None:
