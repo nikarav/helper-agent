@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -12,7 +11,7 @@ def get_logger(name: str) -> logging.Logger:
 
     logger = logging.getLogger(name)
 
-    if not logger.hasHandlers():
+    if not logger.handlers:
         logger.setLevel(logging.INFO)
         console_handler = logging.StreamHandler()
 
@@ -21,10 +20,11 @@ def get_logger(name: str) -> logging.Logger:
         )
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
+        logger.propagate = False
     return logger
 
 
-def set_log_level(logger: logging.Logger, level: Union[int, str]) -> None:
+def set_log_level(logger: logging.Logger, level: int | str) -> None:
     """
     Set the log level for a logger.
 
