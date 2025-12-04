@@ -53,12 +53,11 @@ def main(config: DotDict) -> None:
             include_cats = filter_config.get("include_categories")
             exclude_cats = filter_config.get("exclude_categories")
             docs = filter_by_categories(docs, include_cats, exclude_cats)
-            logger.info(f"  Filtered: {len(docs)} documents")
+            logger.info(f"  Filtered: {len(docs)} documents from {source_name}")
 
         all_docs.extend(docs)
-    print_summary(all_docs)
 
-    logger.info("\nSaving output...")
+    print_summary(all_docs)
     save_documents(
         all_docs, config.output.directory, config.output.filename, config.output.formats
     )
