@@ -4,10 +4,10 @@ from pathlib import Path
 
 from helper_agent.data.filters import filter_by_categories
 from helper_agent.data.parsers import parse_file
-from helper_agent.utilities.configs import DotDict, load_configurations
+from helper_agent.utilities.configs import DotDict, load_configurations, print_config
 from helper_agent.utilities.filesystem import save_documents
 from helper_agent.utilities.logger import get_logger, set_log_level
-from helper_agent.utilities.utils import print_config, print_summary
+from helper_agent.utilities.utils import print_summary
 
 logger = get_logger("helper_agent")
 
@@ -46,7 +46,7 @@ def main(config: DotDict) -> None:
         )
 
         docs = parse_file(filepath, format_type, source_name, category_patterns)
-        logger.info(f"  Parsed: {len(docs)} documents")
+        logger.debug(f"  Parsed: {len(docs)} documents")
 
         filter_config = source_config.get("filter")
         if filter_config:
