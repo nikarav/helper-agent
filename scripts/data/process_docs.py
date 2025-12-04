@@ -1,6 +1,5 @@
 import argparse
 import logging
-from pathlib import Path
 
 from helper_agent.data.filters import filter_by_categories
 from helper_agent.data.parsers import parse_file
@@ -37,7 +36,7 @@ def main(config: DotDict) -> None:
 
     all_docs = []
     for source_config in config.sources:
-        filepath = Path(source_config.path)
+        filepath = source_config.path
         format_type = source_config.format
         source_name = source_config.name
 
@@ -70,8 +69,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         "-c",
-        type=Path,
-        default=Path("configs/data_processing.yaml"),
+        type=str,
+        default="configs/data_processing.yaml",
         help="Path to config file (default: configs/data_processing.yaml)",
     )
     parser.add_argument(
