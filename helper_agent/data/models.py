@@ -1,5 +1,5 @@
 import hashlib
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from typing import Any
 
 
@@ -34,7 +34,9 @@ class Document:
 
     @staticmethod
     def from_dict(doc: dict) -> "Document":
-        return Document(**doc)
+        field_names = {f.name for f in fields(Document)}
+        filtered = {key: value for key, value in doc.items() if key in field_names}
+        return Document(**filtered)
 
 
 @dataclass
