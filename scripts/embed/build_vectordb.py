@@ -1,6 +1,7 @@
 import argparse
 import logging
 from pathlib import Path
+from typing import Any
 
 from tqdm import tqdm
 
@@ -10,7 +11,11 @@ from helper_agent.data.models import Chunk, Document
 from helper_agent.embed.embedder import GeminiEmbedder
 from helper_agent.embed.vectordb import ChromaVectorDB
 from helper_agent.utilities.configs import DotDict, load_configurations, print_config
-from helper_agent.utilities.filesystem import load_documents
+from helper_agent.utilities.filesystem import (
+    load_documents,
+    load_failed_chunks,
+    save_failed_chunks,
+)
 from helper_agent.utilities.logger import get_logger, set_log_level
 
 logger = get_logger("helper_agent")
@@ -43,24 +48,35 @@ def process_document(doc: Document, chunker: DocumentChunker) -> list[Chunk]:
         return []
 
 
-def main(config: DotDict) -> None:
+def _serialize_chunk(chunk: Chunk) -> dict[str, Any]:
+    """
+    Serialize a chunk to a dictionary.
+
+    :param chunk: Chunk object
+    :return: Dictionary containing chunk information
+    """
+    metadata = chunk.to_dict()
+    metadata.pop("content", None)
+    return {
+        "id": chunk.generate_id(),
+        "content": chunk.content,
+        "metadata": metadata,
+    }
+
+
+def main(
+    config: DotDict,
+    resume_file: Path | None = None,
+    failed_chunks_filename: str = "failed_chunks.json",
+) -> None:
     """
     Build vector database from documents.
 
     :param config: Configuration dictionary
-    :return: None
+    :param resume_file: Path to resume file
+    :param failed_chunks_filename: Name of the failed chunks file
     """
     logger.debug(f"Configuration:\n{print_config(config)}")
-
-    input_path = Path(config.input.path)
-    documents = load_documents(input_path)
-    logger.debug(f"Loaded {len(documents)} documents from {input_path}")
-
-    chunker = DocumentChunker(
-        chunk_size=config.chunking.chunk_size,
-        chunk_overlap=config.chunking.chunk_overlap,
-        model_name=config.chunking.model_name,
-    )
 
     embed_cfg = config.embedding
     embedder = GeminiEmbedder(
@@ -84,7 +100,7 @@ def main(config: DotDict) -> None:
     )
 
     stats = {
-        "total_docs": len(documents),
+        "total_docs": 0,
         "processed_docs": 0,
         "skipped_docs": 0,
         "total_chunks": 0,
@@ -92,59 +108,77 @@ def main(config: DotDict) -> None:
         "errors": 0,
     }
 
-    logger.info("Processing documents into chunks...")
-    all_chunks = []
+    payloads = []
+    if resume_file:
+        payloads = load_failed_chunks(resume_file)
+        stats["total_chunks"] = len(payloads)
+        logger.debug("Loaded %s failed chunks from %s", len(payloads), resume_file)
+    else:
+        input_path = Path(config.input.path)
+        documents = load_documents(input_path)
+        stats["total_docs"] = len(documents)
+        logger.debug(f"Loaded {len(documents)} documents from {input_path}")
 
-    for doc in tqdm(documents, desc="Chunking"):
-        chunks = process_document(doc, chunker)
-        if not chunks:
-            stats["skipped_docs"] += 1
-            continue
-        all_chunks.extend(chunks)
-        stats["processed_docs"] += 1
+        chunker = DocumentChunker(
+            chunk_size=config.chunking.chunk_size,
+            chunk_overlap=config.chunking.chunk_overlap,
+            model_name=config.chunking.model_name,
+        )
 
-    stats["total_chunks"] = len(all_chunks)
-    logger.info(
-        f"Generated {len(all_chunks)} chunks from {stats['processed_docs']} documents"
-    )
+        logger.debug("Processing documents into chunks...")
+        all_chunks: list[Chunk] = []
+        for doc in tqdm(documents, desc="Chunking"):
+            chunks = process_document(doc, chunker)
+            if not chunks:
+                stats["skipped_docs"] += 1
+                continue
+            all_chunks.extend(chunks)
+            stats["processed_docs"] += 1
+        stats["total_chunks"] = len(all_chunks)
+        logger.debug(
+            "Generated %s chunks from %s documents",
+            len(all_chunks),
+            stats["processed_docs"],
+        )
+        payloads = [_serialize_chunk(chunk) for chunk in all_chunks]
 
-    chunks_to_process = [(c, c.generate_id()) for c in all_chunks]
+    if not payloads:
+        logger.warning("Nothing to embed. Exiting.")
+        return
 
-    logger.info(f"Embedding {len(chunks_to_process)} new chunks...")
+    failure_path = Path(config.output.vectordb_path) / failed_chunks_filename
 
-    # Process in batches for embedding
+    failed_payloads = []
     batch_size = embed_cfg.batch_size
-    chunks_list = [c for c, _ in chunks_to_process]
-    ids_list = [cid for _, cid in chunks_to_process]
 
-    for i in tqdm(range(0, len(chunks_list), batch_size), desc="Embedding"):
-        batch_chunks = chunks_list[i : i + batch_size]
-        batch_ids = ids_list[i : i + batch_size]
-
-        texts = [c.content for c in batch_chunks]
+    logger.debug("Embedding %s chunks...", len(payloads))
+    for start in tqdm(range(0, len(payloads), batch_size), desc="Embedding"):
+        batch = payloads[start : start + batch_size]
+        ids = [item["id"] for item in batch]
+        texts = [item["content"] for item in batch]
+        metadatas = [item["metadata"] for item in batch]
 
         try:
             embeddings = embedder.embed_texts(texts)
-            metadatas = [c.to_dict() for c in batch_chunks]
-            for m in metadatas:
-                m.pop("content", None)
-
             vectordb.upsert(
-                ids=batch_ids,
+                ids=ids,
                 embeddings=embeddings,
                 documents=texts,
                 metadatas=metadatas,
             )
-
-            stats["embedded_chunks"] += len(batch_chunks)
-        except Exception as e:
-            logger.error(f"Error embedding batch at index {i}: {e}")
+            stats["embedded_chunks"] += len(batch)
+        except Exception:
+            logger.exception("Error embedding batch starting at index %s", start)
             stats["errors"] += 1
+            failed_payloads.extend(batch)
 
     stats["final_db_count"] = vectordb.count()
-    logger.info(f"Build complete. Final DB count: {stats['final_db_count']}")
 
-    logger.debug(f"final stats: {stats}")
+    if failed_payloads:
+        save_failed_chunks(failed_payloads, failure_path)
+
+    logger.info("Build complete. Final DB count: %s", stats["final_db_count"])
+    logger.debug("final stats: %s", stats)
 
 
 if __name__ == "__main__":
@@ -162,6 +196,12 @@ if __name__ == "__main__":
         "--reset",
         action="store_true",
         help="Reset the database before building",
+    )
+    parser.add_argument(
+        "--resume-file",
+        type=Path,
+        default=None,
+        help="Resume embedding from a failed-chunks JSON file",
     )
     parser.add_argument(
         "-v",
@@ -185,4 +225,5 @@ if __name__ == "__main__":
             collection_name=config.output.collection_name,
         )
         vectordb.reset()
-    main(config=config)
+
+    main(config=config, resume_file=args.resume_file)
