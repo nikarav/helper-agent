@@ -14,5 +14,5 @@ chunking:
   model_name: gemini-embedding-001
 output:
   vectordb_path: data/vectordb
-  collection_name: smoke_test
+  collection_name: langgraph_docs
   
