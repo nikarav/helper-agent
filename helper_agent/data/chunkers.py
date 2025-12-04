@@ -75,10 +75,8 @@ class DocumentChunker:
         # Stage 2: Apply size limits
         final_docs = self._size_splitter.split_documents(header_docs)
 
-        # Convert to Chunk objects
         total = len(final_docs)
         chunks = []
-
         for i, lc_doc in enumerate(final_docs):
             chunk = Chunk(
                 content=lc_doc.page_content,
