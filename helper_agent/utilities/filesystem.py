@@ -5,6 +5,18 @@ from pathlib import Path
 from helper_agent.data.models import Document
 
 
+def load_documents(input_path: Path) -> list[Document]:
+    """
+    Load documents from JSON file.
+
+    :param input_path: Path to input JSON
+    :return: List of document dictionaries
+    """
+    with open(input_path) as f:
+        docs = [Document.from_dict(doc) for doc in json.load(f)]
+    return docs
+
+
 def save_documents(
     docs: list[Document],
     output_dir: Path | str,
