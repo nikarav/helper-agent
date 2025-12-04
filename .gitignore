@@ -6,6 +6,8 @@ __pycache__/
 # data
 /data/
 
+# docs
+/docs/
 #.cursor
 .cursor/
 
