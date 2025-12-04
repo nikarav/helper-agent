@@ -1,24 +1,24 @@
 import csv
 import json
-from pathlib import Path
+import os
 from typing import Any
 
 from helper_agent.data.models import Document
 
 
-def save_failed_chunks(failures: list[dict[str, Any]], output_path: Path) -> None:
+def save_failed_chunks(failures: list[dict[str, Any]], output_path: str) -> None:
     """
     Save failed chunks to a file.
 
     :param failures: List of failed chunks
     :param output_path: Path to save the failed chunks
     """
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(failures, f, indent=2, ensure_ascii=False)
 
 
-def load_failed_chunks(path: Path) -> list[dict[str, Any]]:
+def load_failed_chunks(path: str) -> list[dict[str, Any]]:
     """
     Load failed chunks from a file.
 
@@ -29,7 +29,7 @@ def load_failed_chunks(path: Path) -> list[dict[str, Any]]:
         return json.load(f)
 
 
-def load_documents(input_path: Path) -> list[Document]:
+def load_documents(input_path: str) -> list[Document]:
     """
     Load documents from JSON file.
 
@@ -43,7 +43,7 @@ def load_documents(input_path: Path) -> list[Document]:
 
 def save_documents(
     docs: list[Document],
-    output_dir: Path | str,
+    output_dir: str,
     filename: str,
     formats: list[str],
 ) -> None:
@@ -56,17 +56,16 @@ def save_documents(
     :param formats: List of formats to save
     :return: None
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     for fmt in formats:
         if fmt == "json":
-            output_path = output_dir / f"{filename}.json"
+            output_path = os.path.join(output_dir, f"{filename}.json")
             docs_data = [doc.to_dict() for doc in docs]
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(docs_data, f, indent=2, ensure_ascii=False)
         elif fmt == "csv":
-            output_path = output_dir / f"{filename}_metadata.csv"
+            output_path = os.path.join(output_dir, f"{filename}_metadata.csv")
             with open(output_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(
                     f,
