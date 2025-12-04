@@ -1,8 +1,32 @@
 import csv
 import json
 from pathlib import Path
+from typing import Any
 
 from helper_agent.data.models import Document
+
+
+def save_failed_chunks(failures: list[dict[str, Any]], output_path: Path) -> None:
+    """
+    Save failed chunks to a file.
+
+    :param failures: List of failed chunks
+    :param output_path: Path to save the failed chunks
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(failures, f, indent=2, ensure_ascii=False)
+
+
+def load_failed_chunks(path: Path) -> list[dict[str, Any]]:
+    """
+    Load failed chunks from a file.
+
+    :param path: Path to the failed chunks file
+    :return: List of dictionaries containing failed chunk information
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def load_documents(input_path: Path) -> list[Document]:
