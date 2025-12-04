@@ -35,7 +35,6 @@ sources:
         category: "oss/javascript"
       - pattern: "/langsmith/"
         category: "langsmith"
-
 output:
   directory: data/processed
   filename: filtered_docs_new
