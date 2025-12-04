@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 
 from helper_agent.data.models import Document
 
@@ -24,7 +23,7 @@ class LangGraphParser:
     """
 
     @staticmethod
-    def parse(filepath: Path, source_name: str = "langgraph") -> list[Document]:
+    def parse(filepath: str, source_name: str = "langgraph") -> list[Document]:
         """
         Parse LangGraph llms-full.txt format.
 
@@ -43,7 +42,7 @@ class LangGraphParser:
         :param source_name: Name to identify this source (default: "langgraph")
         :return: List of parsed Document objects
         """
-        content = filepath.read_text(encoding="utf-8")
+        content = open(filepath, "r", encoding="utf-8").read()
 
         # Split by document delimiter pattern: ---\nfilepath.md\n---
         pattern = r"^---\n([\w\-/]+\.(?:md|ipynb))\n---\n"
@@ -103,7 +102,7 @@ class LangChainParser:
 
     @staticmethod
     def parse(
-        filepath: Path,
+        filepath: str,
         source_name: str = "langchain",
         category_patterns: list[tuple[str, str]] | None = None,
     ) -> list[Document]:
@@ -127,7 +126,7 @@ class LangChainParser:
         :param category_patterns: List of (pattern, category) tuples for URL categorization
         :return: List of parsed Document objects
         """
-        content = filepath.read_text(encoding="utf-8")
+        content = open(filepath, "r", encoding="utf-8").read()
 
         # (# at start of line, followed by Source:)
         pattern = r"^(# .+?)\nSource: (https?://[^\n]+)\n"
@@ -159,7 +158,7 @@ class LangChainParser:
 
 
 def parse_file(
-    filepath: Path | str,
+    filepath: str,
     format_type: str,
     source_name: str | None = None,
     category_patterns: list[tuple[str, str]] | None = None,
@@ -174,7 +173,6 @@ def parse_file(
     :return: List of parsed Document objects
     :raises ValueError: If format_type is not supported
     """
-    filepath = Path(filepath)
     source_name = source_name or format_type
 
     if format_type == "langgraph":
