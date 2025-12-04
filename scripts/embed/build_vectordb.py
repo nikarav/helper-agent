@@ -1,6 +1,6 @@
 import argparse
 import logging
-from pathlib import Path
+import os
 from typing import Any
 
 from tqdm import tqdm
@@ -8,8 +8,6 @@ from tqdm import tqdm
 from helper_agent.data.chunkers import DocumentChunker
 from helper_agent.data.cleaners import clean_document
 from helper_agent.data.models import Chunk, Document
-from helper_agent.embed.embedder import GeminiEmbedder
-from helper_agent.embed.vectordb import ChromaVectorDB
 from helper_agent.utilities.configs import DotDict, load_configurations, print_config
 from helper_agent.utilities.filesystem import (
     load_documents,
@@ -17,6 +15,8 @@ from helper_agent.utilities.filesystem import (
     save_failed_chunks,
 )
 from helper_agent.utilities.logger import get_logger, set_log_level
+from helper_agent.vectorstore.embedder import GeminiEmbedder
+from helper_agent.vectorstore.vectordb import ChromaVectorDB
 
 logger = get_logger("helper_agent")
 
@@ -66,7 +66,7 @@ def _serialize_chunk(chunk: Chunk) -> dict[str, Any]:
 
 def main(
     config: DotDict,
-    resume_file: Path | None = None,
+    resume_file: str | None = None,
     failed_chunks_filename: str = "failed_chunks.json",
 ) -> None:
     """
@@ -114,7 +114,7 @@ def main(
         stats["total_chunks"] = len(payloads)
         logger.debug("Loaded %s failed chunks from %s", len(payloads), resume_file)
     else:
-        input_path = Path(config.input.path)
+        input_path = config.input.path
         documents = load_documents(input_path)
         stats["total_docs"] = len(documents)
         logger.debug(f"Loaded {len(documents)} documents from {input_path}")
@@ -146,7 +146,7 @@ def main(
         logger.warning("Nothing to embed. Exiting.")
         return
 
-    failure_path = Path(config.output.vectordb_path) / failed_chunks_filename
+    failure_path = os.path.join(config.output.vectordb_path, failed_chunks_filename)
 
     failed_payloads = []
     batch_size = embed_cfg.batch_size
@@ -188,8 +188,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         "-c",
-        type=Path,
-        default=Path("configs/embedding.yaml"),
+        type=str,
+        default="configs/embedding.yaml",
         help="Path to config file (default: configs/embedding.yaml)",
     )
     parser.add_argument(
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--resume-file",
-        type=Path,
+        type=str,
         default=None,
         help="Resume embedding from a failed-chunks JSON file",
     )
