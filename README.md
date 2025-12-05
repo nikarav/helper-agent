@@ -190,7 +190,7 @@ The repository includes two versions of the pre-built vector database:
 | **v1 (default)** | 1070 | `langgraph_docs` | Header-only splitting (split at every `##`/`###`) | Shipping — better grounded answers |
 | v2 | 732 | `documentation` | Header splitting + greedy merge | Experimental — needs more regression tests |
 
-> **Note:** v2 is selected by default. It introduces a greedy merge step that combines adjacent small sections *only if* they share the same `h2` parent header and fit within the chunk size limit. This reduces chunk count by ~32% while preserving topical coherence—sections about different topics are never merged together.
+> **Note:** v1 is selected by default. The newer version `v2` introduces a greedy merge step that combines adjacent small sections *only if* they share the same `h2` parent header and fit within the chunk size limit. This reduces chunk count by ~32% while preserving topical coherence—sections about different topics are never merged together.
 
 Toggle via `configs/embedding.yaml`:
 ```yaml
