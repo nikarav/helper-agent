@@ -1,10 +1,16 @@
 import os
 
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.rule import Rule
+
 from helper_agent.data.filters import get_category_counts, get_source_counts
 from helper_agent.data.models import Document
 from helper_agent.utilities.logger import get_logger
 
 logger = get_logger("helper_agent")
+console = Console()
 
 
 def load_prompt(name: str, prompts_dir: str) -> str:
@@ -23,6 +29,22 @@ def load_prompt(name: str, prompts_dir: str) -> str:
     content = open(prompt_file, "r", encoding="utf-8").read()
     logger.debug(f"Loaded prompt: {name}")
     return content
+
+
+def print_question_block(question: str) -> None:
+    """
+    Pretty-print a question to the console.
+    """
+    console.print()
+    console.print(Panel.fit(question, title="Question", border_style="cyan", width=100))
+    console.print(Rule(style="dim"))
+
+
+def print_answer_block(answer: str) -> None:
+    """
+    Pretty-print an answer with Markdown rendering.
+    """
+    console.print(Panel(Markdown(answer), title="Answer", border_style="green"))
 
 
 def print_summary(docs: list[Document]) -> None:
