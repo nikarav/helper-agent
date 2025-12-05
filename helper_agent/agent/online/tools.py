@@ -52,7 +52,6 @@ def create_online_tools(
 
         results = []
         summary = response.get("answer")
-        print("response", response)
         if summary:
             results.append(f"Summary: {summary}")
 
