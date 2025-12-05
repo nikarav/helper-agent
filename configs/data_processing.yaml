@@ -1,0 +1,43 @@
+sources:
+  - path: data/langgraph-llms-full.txt
+    format: langgraph
+    name: langgraph
+
+  - path: data/langchain-llms-full.txt
+    format: langchain
+    name: langchain
+    filter:
+      include_categories:
+        - oss/python/langchain      # Core LangChain Python
+        - oss/python/integrations   # Model providers, vector stores, tools
+        - oss/python/migrate        # Migration guides
+        - oss/python/releases       # Release notes
+    category_patterns:  # URL pattern -> category mapping (order matters, first match wins)
+      - pattern: "/oss/python/langchain/"
+        category: "oss/python/langchain"
+      - pattern: "/oss/python/langgraph/"
+        category: "oss/python/langgraph"
+      - pattern: "/oss/python/integrations/"
+        category: "oss/python/integrations"
+      - pattern: "/oss/python/migrate/"
+        category: "oss/python/migrate"
+      - pattern: "/oss/python/releases/"
+        category: "oss/python/releases"
+      - pattern: "/oss/python/deepagents/"
+        category: "oss/python/deepagents"
+      - pattern: "/oss/python/contributing/"
+        category: "oss/python/contributing"
+      - pattern: "/oss/python/concepts/"
+        category: "oss/python/concepts"
+      - pattern: "/oss/python/"
+        category: "oss/python/other"
+      - pattern: "/oss/javascript/"
+        category: "oss/javascript"
+      - pattern: "/langsmith/"
+        category: "langsmith"
+output:
+  directory: data/processed
+  filename: filtered_docs_new
+  formats:
+    - json
+

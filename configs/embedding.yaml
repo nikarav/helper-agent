@@ -1,0 +1,18 @@
+input:
+  path: data/processed/filtered_docs_new.json
+embedding:
+  model: gemini-embedding-001
+  dimension: 512
+  task_type: RETRIEVAL_DOCUMENT
+  batch_size: 20
+rate_limits:
+  rpm: 100
+  tpm: 30000 # https://ai.google.dev/gemini-api/docs/rate-limits#free-tier
+chunking:
+  chunk_size: 1400
+  chunk_overlap: 200
+  model_name: gemini-embedding-001
+output:
+  vectordb_path: data/vectordb
+  collection_name: langgraph_docs
+  

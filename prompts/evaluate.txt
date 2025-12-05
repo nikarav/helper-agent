@@ -1,0 +1,17 @@
+Evaluate whether the answer is well-supported by the given context.
+
+Consider:
+- Does the answer directly address the question?
+- Is the information in the answer present in the context?
+- Is the answer complete or missing key details?
+
+Context:
+{context}
+
+Question: {question}
+Answer: {answer}
+
+Respond ONLY with minified JSON containing the keys
+`is_confident` (boolean) and `reasoning` (short string), matching
+the schema already provided out of band. No explanations outside the
+JSON object.

@@ -3,6 +3,17 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# data
+/data/
+
+# docs
+/docs/
+#.cursor
+.cursor/
+
+# DS Store
+**/.DS_Store
+
 # C extensions
 *.so
 
@@ -205,3 +216,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# some notebooks
+Untitled-1.ipynb
