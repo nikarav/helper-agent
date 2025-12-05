@@ -1,4 +1,4 @@
-from typing import Any, Callable, Literal, TypedDict
+from typing import Any, Callable, Literal
 
 from langgraph.graph import END, START, StateGraph
 
@@ -8,22 +8,12 @@ from helper_agent.agent.offline.nodes import (
     create_reformulate_node,
     create_retrieve_node,
 )
+from helper_agent.agent.offline.state import OfflineAgentState
 from helper_agent.utilities.llm import get_llm
 from helper_agent.utilities.logger import get_logger
 from helper_agent.vectorstore.retriever import Retriever
 
 logger = get_logger("helper_agent")
-
-
-class OfflineAgentState(TypedDict):
-    """State passed between nodes in the agent graph."""
-
-    query: str  # user query
-    reformulated_query: str  # current query (may be reformulated)
-    retrieved_docs: list[str]  # retrieved context chunks
-    answer: str  # generated answer
-    is_confident: bool  # evaluation result
-    retry_count: int  # loop counter
 
 
 def _should_continue_factory(
