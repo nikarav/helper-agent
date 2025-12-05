@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel
 
-from helper_agent.agent.offline.graph import OfflineAgentState
+from helper_agent.agent.offline.state import OfflineAgentState
 from helper_agent.utilities.logger import get_logger
 from helper_agent.utilities.utils import load_prompt
 from helper_agent.vectorstore.retriever import Retriever
