@@ -17,6 +17,7 @@ from helper_agent.agent.online.graph import (
 )
 from helper_agent.utilities.configs import load_configurations
 from helper_agent.utilities.logger import get_logger, set_log_level
+from helper_agent.utilities.utils import print_answer_block, print_question_block
 
 logger = get_logger("helper_agent")
 
@@ -28,12 +29,11 @@ def _run_offline_query(graph: StateGraph[OfflineAgentState], query: str) -> None
     :param graph: Compiled StateGraph
     :param query: User query
     """
-    print(f"\nQuestion: {query}\n")
-    print("-" * 60)
+    print_question_block(query)
 
     result = run_offline_agent(graph, query)
 
-    print(f"\nAnswer:\n{result['answer']}")
+    print_answer_block(result["answer"])
 
     if result.get("retry_count", 0) > 1:
         logger.debug(f"\n(Reformulated {result['retry_count'] - 1} time(s))")
@@ -51,13 +51,12 @@ def _run_online_query(graph: StateGraph[OnlineAgentState], query: str) -> None:
     :param graph: Compiled StateGraph
     :param query: User query
     """
-    print(f"\nQuestion: {query}\n")
-    print("-" * 60)
+    print_question_block(query)
 
     result = run_online_agent(graph, query)
     answer = get_final_answer(result)
 
-    print(f"\nAnswer:\n{answer}")
+    print_answer_block(answer)
 
 
 def _run_interactive(
