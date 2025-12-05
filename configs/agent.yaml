@@ -1,5 +1,5 @@
 offline:
-  prompts_dir: prompts
+  prompts_dir: prompts/offline
   llm:
     default:
       model: gemini-2.0-flash
@@ -18,7 +18,7 @@ offline:
   agent:
     max_retries: 2
 online:
-  prompts_dir: prompts
+  prompts_dir: prompts/online
   llm:
     default:
       model: gemini-2.0-flash
@@ -27,13 +27,9 @@ online:
     generate:
       temperature: 0.0
       max_tokens: 2048
-    evaluate:
-      temperature: 0.3
-    reformulate:
-      temperature: 0.0
   retrieval:
     top_k: 5
     vectordb_path: data/vectordb
     collection_name: langgraph_docs
-  agent:
-    max_retries: 2
+  web_search:
+    max_results: 5
