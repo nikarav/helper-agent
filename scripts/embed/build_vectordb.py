@@ -122,7 +122,7 @@ def main(
         chunker = DocumentChunker(
             chunk_size=config.chunking.chunk_size,
             chunk_overlap=config.chunking.chunk_overlap,
-            model_name=config.chunking.model_name,
+            greedy_merge=config.chunking.get("greedy_merge", True),
         )
 
         logger.debug("Processing documents into chunks...")

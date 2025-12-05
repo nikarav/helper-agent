@@ -1,5 +1,5 @@
 input:
-  path: data/processed/filtered_docs_new.json
+  path: data/filtered_docs.json
 embedding:
   model: gemini-embedding-001
   dimension: 512
@@ -11,7 +11,7 @@ rate_limits:
 chunking:
   chunk_size: 1400
   chunk_overlap: 200
-  model_name: gemini-embedding-001
+  greedy_merge: false  # merge adjacent small sections within same h2 parent
 output:
   vectordb_path: data/vectordb
   collection_name: langgraph_docs
