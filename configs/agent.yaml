@@ -2,10 +2,11 @@ offline:
   prompts_dir: prompts/offline
   llm:
     default:
-      model: gemini-2.0-flash
+      model: gemini-2.5-flash-lite
       temperature: 0.7
       max_tokens: 1024
     generate:
+      temperature: 0.1
       max_tokens: 2048
     evaluate:
       temperature: 0.0  # Deterministic for consistent evaluation
@@ -21,7 +22,7 @@ online:
   prompts_dir: prompts/online
   llm:
     default:
-      model: gemini-2.0-flash
+      model: gemini-2.5-flash-lite
       temperature: 0.7
       max_tokens: 1024
     generate:
