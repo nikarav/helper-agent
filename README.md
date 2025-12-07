@@ -110,11 +110,7 @@ The agent implements a RAG pipeline with self-correction:
 3. Evaluate if the answer is grounded in the docs
 4. If not confident, reformulate the query and retry (up to 2 times)
 
-```
-START → Retrieve → Generate → Evaluate → [Confident?]
-                                         ├─ Yes/Max retries → END
-                                         └─ No → Reformulate → Retrieve (loop)
-```
+![Offline Agent Graph](docs/offline_graph.png)
 
 **This architecture optimizes offline mode's constraint (limited data) through
 intelligent retry with query reformulation.**
@@ -125,13 +121,7 @@ Extends offline capabilities with web search via Tavily. Useful for recent updat
 
 The agent uses a ReAct pattern: it reasons about the question, decides whether to search the local docs or the web, and iterates until it has enough information to answer.
 
-```
-START → Agent (LLM) → [Tool calls?]
-                      ├─ No → END (final answer)
-                      └─ Yes → Execute Tools → Agent (loop)
-
-Tools: search_documentation (vector store), web_search (Tavily)
-```
+![Online Agent Graph](docs/online_graph.png)
 
 ## Architecture
 
